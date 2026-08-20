@@ -1,0 +1,23 @@
+---
+- name: Debug AAP Injected K8s Credentials and CA Cert
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Display K8S environment variables injected by AAP
+      ansible.builtin.debug:
+        msg:
+          - "K8S_AUTH_HOST: {{ lookup('env', 'K8S_AUTH_HOST') }}"
+          - "K8S_AUTH_SSL_CA_CERT: {{ lookup('env', 'K8S_AUTH_SSL_CA_CERT') }}"
+          - "K8S_AUTH_CA_CERT: {{ lookup('env', 'K8S_AUTH_CA_CERT') }}"
+
+    - name: Inspect injected CA cert file contents (if set)
+      ansible.builtin.command:
+        cmd: "cat {{ lookup('env', 'K8S_AUTH_SSL_CA_CERT') | default(lookup('env', 'K8S_AUTH_CA_CERT'), true) }}"
+      register: ca_file_content
+      when: lookup('env', 'K8S_AUTH_SSL_CA_CERT') != '' or lookup('env', 'K8S_AUTH_CA_CERT') != ''
+      failed_when: false
+
+    - name: Show CA File Content
+      ansible.builtin.debug:
+        var: ca_file_content.stdout_lines
