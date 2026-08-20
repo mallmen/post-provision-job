@@ -1,0 +1,19 @@
+---
+- name: Test OpenShift Connectivity and List Worker Nodes
+  hosts: localhost
+  gather_facts: false
+  vars:
+    validate_certs: true
+
+  tasks:
+    - name: Fetch worker nodes from cluster
+      kubernetes.core.k8s_info:
+        kind: Node
+        label_selectors:
+          - "node-role.kubernetes.io/worker="
+        validate_certs: "{{ validate_certs }}"
+      register: node_list
+
+    - name: Display worker node names
+      ansible.builtin.debug:
+        msg: "{{ node_list.resources | map(attribute='metadata.name') | list }}"

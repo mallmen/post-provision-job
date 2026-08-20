@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: custom-automation
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-watcher-sa
+  namespace: custom-automation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-watcher-role
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-watcher-binding
+subjects:
+  - kind: ServiceAccount
+    name: node-watcher-sa
+    namespace: custom-automation
+roleRef:
+  kind: ClusterRole
+  name: node-watcher-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aap-credentials
+  namespace: custom-automation
+type: Opaque
+stringData:
+  token: "YOUR_AAP_BEARER_TOKEN_HERE"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-watcher
+  namespace: custom-automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-watcher
+  template:
+    metadata:
+      labels:
+        app: node-watcher
+    spec:
+      serviceAccountName: node-watcher-sa
+      containers:
+        - name: watcher
+          image: image-registry.openshift-image-registry.svc:5000/custom-automation/node-watcher:latest
+          imagePullPolicy: Always
+          env:
+            - name: JOB_NAMESPACE
+              value: "custom-automation"
+            - name: AAP_URL
+              value: "https://aap.example.com/api/v2/workflow_job_templates/42/launch/"
