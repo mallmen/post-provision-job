@@ -1,0 +1,18 @@
+---
+- name: Remove Zero-Trust Firewall Taint
+  hosts: localhost
+  gather_facts: false
+  vars:
+    target_node: "{{ target_node }}"
+    validate_certs: true
+
+  tasks:
+    - name: Remove taint from node
+      kubernetes.core.k8s_taint:
+        name: "{{ target_node }}"
+        validate_certs: "{{ validate_certs }}"
+        taints:
+          - key: "network.zero-trust.io/firewall-unverified"
+            value: "true"
+            effect: "NoSchedule"
+            state: absent
