@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    validate_certs: true
+    validate_certs: false
 
   tasks:
     - name: Fetch worker nodes from cluster
