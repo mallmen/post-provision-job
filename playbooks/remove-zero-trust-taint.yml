@@ -19,12 +19,12 @@
           spec:
             taints: []
 
-    #- name: Remove taint from node
-    #  kubernetes.core.k8s_taint:
-    #    name: "{{ target_node }}"
-    #    validate_certs: "{{ validate_certs }}"
-    #    state: absent
-    #    taints:
-    #      - key: "network.zero-trust.io/firewall-unverified"
-    #        value: "true"
-    #        effect: "NoSchedule"
+    - name: Remove taint from node
+      kubernetes.core.k8s_taint:
+        name: "{{ target_node }}"
+        validate_certs: "{{ validate_certs }}"
+        state: absent
+        taints:
+          - key: "network.zero-trust.io/firewall-unverified"
+            value: "true"
+            effect: "NoSchedule"
