@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     target_node: "{{ target_node }}"
-    validate_certs: true
+    validate_certs: false
 
   tasks:
     - name: Remove taint from node
